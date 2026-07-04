@@ -1,17 +1,17 @@
 import mongoose, { Schema, Types } from "mongoose";
 
-export type HistoryIntrf = {
+export type ResultIntrf = {
     created_at: string;
     explanation: string;
     image: {
         public_id: string;
-        url: string;
         resource_type: string;
+        url: string;
     };
     user_id: Types.ObjectId;
 }
 
-const historySchema = new Schema<HistoryIntrf>({
+const resultSchema = new Schema<ResultIntrf>({
     created_at: { type: String, required: true },
     explanation: { type: String, required: true },
     image: {
@@ -22,4 +22,4 @@ const historySchema = new Schema<HistoryIntrf>({
     user_id: { type: Schema.Types.ObjectId, required: true }
 });
 
-export const History = mongoose.model<HistoryIntrf>("histories", historySchema, "histories");
+export const Results = mongoose.model<ResultIntrf>("results", resultSchema, "results");
