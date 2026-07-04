@@ -1,7 +1,6 @@
 import { AuthUser } from "../middleware/auth.middleware";
 import { Response } from 'express';
 import { User } from "../models/user.model";
-import { profile } from "node:console";
 
 export async function getCurrentUser(req: AuthUser, res: Response) {
     try {

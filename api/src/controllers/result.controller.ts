@@ -7,7 +7,7 @@ import { v2 } from "cloudinary";
 export async function analyzingImages(req: AuthUser, res: Response) {
     try {
         const currentUserId = req.user?.user_id;
-        const image = req.file as Express.Multer.File;
+        const image = req.file as Express.Multer.File | undefined;
         const { explanation } = req.body;
 
         if (!image) return res.status(400).json({ message: "image is required" });

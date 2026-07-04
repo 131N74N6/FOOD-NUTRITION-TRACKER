@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import { Multer } from "multer";
 
 export interface AuthUser extends Request {
     user?: { 
