@@ -9,12 +9,12 @@ export async function changeUser(req: AuthUser, res: Response) {
     try {
         const currentUserId = req.user?.user_id;
         const { username } = req.body;
-        const image = req.file as Express.Multer.File;
+        const image = req.file as Express.Multer.File | undefined;
 
         const uploadResult = await uploadToCloudinary({ 
-            fileBuffer: image.buffer, 
+            fileBuffer: image?.buffer!, 
             folder: "user_profile", 
-            originalName: image.originalname 
+            originalName: image?.originalname! 
         });
 
         await User.updateOne({ _id: currentUserId }, {
