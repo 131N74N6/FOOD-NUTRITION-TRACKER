@@ -29,7 +29,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors());
 app.use('/api/auths', authRouters);
-app.use('/api/histories', resultRouters);
+app.use('/api/result', resultRouters);
 app.use('/api/users', userRouters);
 
 if (process.env.NODE_ENV !== 'production') {

@@ -14,3 +14,8 @@ export interface IUser {
     user_id: string;
     username: string;
 }
+
+export interface IUserService{
+    message?: string | null;
+    setMessage?: (message: string | null) => void;
+}

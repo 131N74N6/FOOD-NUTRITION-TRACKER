@@ -3,12 +3,12 @@ import { AuthUser } from "../middleware/auth.middleware";
 import { Results } from "../models/result.model";
 import { uploadToCloudinary } from "../services/cloudinary.service";
 import { v2 } from "cloudinary";
+import { analyzeImageWithAI } from "../services/ai.service";
 
 export async function analyzingImages(req: AuthUser, res: Response) {
     try {
         const currentUserId = req.user?.user_id;
         const image = req.file as Express.Multer.File | undefined;
-        const { explanation } = req.body;
 
         if (!image) return res.status(400).json({ message: "image is required" });
 
@@ -18,17 +18,19 @@ export async function analyzingImages(req: AuthUser, res: Response) {
             originalName: image.originalname 
         });
 
+        const aiResult = await analyzeImageWithAI(image.buffer, image.mimetype);
+
         const newResult = new Results({
             created_at: new Date().toISOString(),
-            explanation,
+            explanation: aiResult.analysis,
             image: uploadResult,
             user_id: currentUserId!
         });
 
         await newResult.save();
         res.status(200).json({ message: "result saved successfully" });
-    } catch (error) {
-        res.status(500).json({ message: "something went wrong" });
+    } catch (error: any) {
+        res.status(500).json({ message: error.message || "something went wrong" });
     }
 }
 
@@ -57,7 +59,7 @@ export async function deleteResult(req: Request, res: Response) {
         const result = await Results.findOne({ _id: req.params._id });
         if (!result) return res.status(404).json({ message: "data not found" });
 
-        await v2.uploader.destroy(result.image.public_id, { resource_type: result?.image.resource_type });
+        await v2.uploader.destroy(result.image.public_id, { resource_type: result.image.resource_type });
         await Results.deleteOne({ _id: req.params._id });
         res.status(200).json({ message: "result deleted" });
     } catch (error) {

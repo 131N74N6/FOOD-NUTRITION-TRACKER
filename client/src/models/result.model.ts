@@ -9,3 +9,9 @@ export interface IResult {
     };
     user_id: string;
 }
+
+export interface IResultService {
+    id?: string;
+    message?: string | null;
+    setMessage?: (message: string | null) => void;
+}
