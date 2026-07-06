@@ -12,6 +12,6 @@ resultRouters.delete('/rm/:_id', verifyToken, deleteResult);
 resultRouters.get('/show-all', verifyToken, getAllResults);
 resultRouters.get('/show/:_id', verifyToken, getDetailedResult);
 
-resultRouters.post('/analyze', uploadFile, verifyToken, analyzingImages);
+resultRouters.post('/analyze', verifyToken, uploadFile, analyzingImages);
 
 export default resultRouters;

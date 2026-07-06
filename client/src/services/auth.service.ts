@@ -1,13 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { IAuthService, ISignIn, ISignUp, IUser } from "../models/user.model";
-import DataService from "./data.service";
+import type { IAuthService, IUser } from "../models/user.model";
 import { useNavigate } from "react-router-dom";
 import { useUserrStore } from "../stores/user.store";
 
 export default function AuthService(props?: IAuthService) {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
-    const { insertData } = DataService();
 
     const signIn = useUserrStore((state) => state.signIn);
     const setSignIn = useUserrStore((state) => state.setSignIn);
@@ -39,13 +37,23 @@ export default function AuthService(props?: IAuthService) {
 
     const signInMt = useMutation({
         mutationFn: async () => {
-            await insertData<ISignIn>({
-                api_url: `${import.meta.env.VITE_BASE_API_URL}/auths/sign-in`,
-                data: {
-                    password: signIn.password.trim(),
-                    username: signIn.username.trim()
-                }
-            });
+            try {
+                const request = await fetch(`${import.meta.env.VITE_BASE_API_URL}/auths/sign-in`, {
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    method: 'POST',
+                    body: JSON.stringify({
+                        password: signIn.password.trim(),
+                        username: signIn.username.trim()
+                    })
+                });
+
+                const response = await request.json();
+                if (!request.ok) throw new Error(response.message);
+                return response;
+            } catch (error: any) {
+                throw error;
+            }
         },
         onError: (error) => {
             props?.setMessage(error.message);
@@ -60,10 +68,19 @@ export default function AuthService(props?: IAuthService) {
 
     const signOutMt = useMutation({
         mutationFn: async () => {
-            await insertData({
-                api_url: `${import.meta.env.VITE_BASE_API_URL}/auths/sign-out`,
-                data: {}
-            });
+            try {
+                const request = await fetch(`${import.meta.env.VITE_BASE_API_URL}/auths/sign-out`, {
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    method: 'POST'
+                });
+
+                const response = await request.json();
+                if (!request.ok) throw new Error(response.message);
+                return response;
+            } catch (error: any) {
+                throw error;
+            }
         },
         onError: (error) => {
             props?.setMessage(error.message);
@@ -79,14 +96,24 @@ export default function AuthService(props?: IAuthService) {
 
     const signUpMt = useMutation({
         mutationFn: async () => {
-            await insertData<ISignUp>({
-                api_url: `${import.meta.env.VITE_BASE_API_URL}/auths/sign-up`,
-                data: {
-                    email: signUp.email.trim(),
-                    password: signUp.password.trim(),
-                    username: signUp.username.trim()
-                }
-            });
+            try {
+                const request = await fetch(`${import.meta.env.VITE_BASE_API_URL}/auths/sign-up`, {
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    method: 'POST',
+                    body: JSON.stringify({
+                        email: signUp.email.trim(),
+                        password: signUp.password.trim(),
+                        username: signUp.username.trim()
+                    })
+                });
+
+                const response = await request.json();
+                if (!request.ok) throw new Error(response.message);
+                return response;
+            } catch (error: any) {
+                throw error;
+            }
         },
         onError: (error) => {
             props?.setMessage(error.message);

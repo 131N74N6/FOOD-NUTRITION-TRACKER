@@ -36,33 +36,34 @@ export async function analyzeImageWithAI(imageBuffer: Buffer, mimeType: string):
             method: 'POST'
         });
 
+        const response: any = await request.json().catch(() => ({}));
+
         if (!request.ok) {
-            const errorData: any = await request.json().catch(() => ({}));
-            throw new Error(errorData?.error?.message || `AI API error: ${request.status}`);
+            const errorMessage = response?.error?.message || `AI API error: ${response.status}`;
+
+            if (request.status === 400) {
+                throw new Error(`Invalid request to AI API: ${errorMessage}`);
+            } else if (request.status === 403) {
+                throw new Error('AI API key is invalid or expired');
+            } else if (request.status === 429) {
+                throw new Error('AI API rate limit exceeded. Please try again later');
+            } else if (request.status >= 500) {
+                throw new Error('AI API server error. Please try again later');
+            }
         }
 
-        const response: any = await request.json();            
         const analysisText = response?.candidates?.[0]?.content?.parts?.[0]?.text;
 
         if (!analysisText) throw new Error('No analysis result from AI');
 
         return { analysis: analysisText };
     } catch (error: any) {
-        if (error.response) {
-            const status = error.response.status;
-            const errorMessage = error.response.data?.error?.message || 'Unknown error';
-
-            if (status === 400) {
-                throw new Error(`Invalid request to AI API: ${errorMessage}`);
-            } else if (status === 403) {
-                throw new Error('AI API key is invalid or expired');
-            } else if (status === 429) {
-                throw new Error('AI API rate limit exceeded. Please try again later');
-            } else if (status >= 500) {
-                throw new Error('AI API server error. Please try again later');
-            }
-        } else if (error.code === 'ECONNABORTED') {
+        if (error.name === 'AbortError' || error.name === 'TimeoutError') {
             throw new Error('AI API request timeout. Please try again');
+        }
+
+        if (error.cause?.code === 'ECONNREFUSED' || error.cause?.code === 'ENOTFOUND') {
+            throw new Error('Cannot connect to AI API. Check your internet connection');
         }
 
         throw new Error('Failed to analyze image');

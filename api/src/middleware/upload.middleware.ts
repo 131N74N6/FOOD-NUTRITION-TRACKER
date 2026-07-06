@@ -4,7 +4,15 @@ import { Request } from 'express';
 const storage = multer.memoryStorage();
 
 function fileFilter(_: Request, file: Express.Multer.File, callback: multer.FileFilterCallback) {
-    const allowedTypes = ['image/jpg', 'image/avif', 'image/avci', 'image/jpeg', 'image/png', 'image/gif'];
+    const allowedTypes = [
+        'image/jpg', 
+        'image/webp', 
+        'image/avif', 
+        'image/avci', 
+        'image/jpeg', 
+        'image/png', 
+        'image/gif'
+    ];
 
     if (allowedTypes.includes(file.mimetype)) {
         callback(null, true);

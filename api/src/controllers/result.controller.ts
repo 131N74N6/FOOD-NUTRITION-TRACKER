@@ -8,17 +8,17 @@ import { analyzeImageWithAI } from "../services/ai.service";
 export async function analyzingImages(req: AuthUser, res: Response) {
     try {
         const currentUserId = req.user?.user_id;
+        
         const image = req.file as Express.Multer.File | undefined;
-
         if (!image) return res.status(400).json({ message: "image is required" });
+        
+        const aiResult = await analyzeImageWithAI(image.buffer, image.mimetype);
 
         const uploadResult = await uploadToCloudinary({ 
             fileBuffer: image.buffer, 
             folder: "nutrition_tracker", 
             originalName: image.originalname 
         });
-
-        const aiResult = await analyzeImageWithAI(image.buffer, image.mimetype);
 
         const newResult = new Results({
             created_at: new Date().toISOString(),
@@ -28,7 +28,7 @@ export async function analyzingImages(req: AuthUser, res: Response) {
         });
 
         await newResult.save();
-        res.status(200).json({ message: "result saved successfully" });
+        res.status(200).json({ explanation: aiResult.analysis });
     } catch (error: any) {
         res.status(500).json({ message: error.message || "something went wrong" });
     }
