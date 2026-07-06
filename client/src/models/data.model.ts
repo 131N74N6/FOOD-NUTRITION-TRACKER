@@ -14,12 +14,14 @@ export interface IDeleteData {
 
 export interface IGetData {
     api_url: string;
+    enabled?: boolean;
     stale_time: number;
     query_key: string[];
 }
 
 export interface InfiniteScrollIntrf {
     api_url: string;
+    enabled?: boolean;
     limit: number;
     stale_time: number;
     query_key: string[];

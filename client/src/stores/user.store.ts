@@ -3,12 +3,15 @@ import type { ISignIn, ISignUp, IUser } from "../models/user.model";
 
 export interface UserState {
     editUser: IUser;
-    selectedImage: string;
+    selectedImage: string | null;
     signIn: ISignIn;
     signUp: ISignUp;
 
+    resetSignIn: () => void;
+    resetSignUp: () => void;
+
     setEditUser: (key: 'created_at'| 'email' | 'profile_picture' | 'user_id' | 'username', value: string) => void;
-    setSelectedImage: (selectedImage: string) => void;
+    setSelectedImage: (selectedImage: string | null) => void;
     setSignIn: (key: 'password' | 'username', value: string) => void;
     setSignUp: (key: 'email' | 'password' | 'username', value: string) => void;
 }
@@ -17,11 +20,15 @@ export const useUserrStore = create<UserState>((set) => ({
     editUser: {
         created_at: "",
         email: "",
-        profile_picture: "",
+        profile_picture: {
+            public_id: "",
+            resource_type: "",
+            url: ""
+        },
         user_id: "",
         username: ""
     },
-    selectedImage: "",
+    selectedImage: null,
     signIn: {
         password: "",
         username: ""
@@ -31,6 +38,9 @@ export const useUserrStore = create<UserState>((set) => ({
         password: "",
         username: ""
     },
+
+    resetSignIn: () => set({ signIn: { password: "", username: "" } }),
+    resetSignUp: () => set({ signUp: { email: "", password: "", username: "" } }),
 
     setEditUser: (key, value) => set((state) => ({ editUser: { ...state.editUser, [key]: value } })),
     setSelectedImage: (selectedImage) => set({ selectedImage }),

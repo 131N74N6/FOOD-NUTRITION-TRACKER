@@ -30,14 +30,21 @@ export async function changeUser(req: AuthUser, res: Response) {
 export async function deleteUser(req: AuthUser, res: Response) {
     try {
         const currentUser = await User.findOne({ _id: req.user?.user_id });
+        if (!currentUser) return res.status(404).json({ message: "user not found" });
+
         const results = await Results.find({ user_id: currentUser?._id });
         const deletePromises = results.map(result => {
-            return v2.uploader.destroy(result.image.public_id, { resource_type: result.image.resource_type });
+            return v2.uploader.destroy(result.image.public_id, { 
+                resource_type: result.image.resource_type 
+            });
         });
 
         await Promise.all ([
             ...deletePromises,
             Results.deleteMany({ user_id: currentUser?._id }),
+            v2.uploader.destroy(currentUser.profile_picture.public_id, { 
+                resource_type: currentUser.profile_picture.resource_type 
+            }),
             User.deleteOne({ _id: currentUser?._id })
         ]);
 

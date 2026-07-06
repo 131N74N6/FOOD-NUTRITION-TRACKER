@@ -1,8 +1,8 @@
 import { create } from "zustand";
 
 export interface AnalyzeState {
-    selectedImage: string;
-    setSelectedImage: (selectedImage: string) => void;
+    selectedImage: string | null;
+    setSelectedImage: (selectedImage: string | null) => void;
 }
 
 export const useAnalyzeStore = create<AnalyzeState>((set) => ({

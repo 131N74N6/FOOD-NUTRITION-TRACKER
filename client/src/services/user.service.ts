@@ -47,5 +47,7 @@ export default function UserServices(props?: IUserService) {
         }
     });
 
-    return { changeUserMt, deleteUserMt }
+    const isProcessing = changeUserMt.isPending || deleteUserMt.isPending;
+
+    return { changeUserMt, deleteUserMt, isProcessing }
 }

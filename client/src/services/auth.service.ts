@@ -1,16 +1,21 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { ISignIn, ISignUp, IUser } from "../models/user.model";
+import type { IAuthService, ISignIn, ISignUp, IUser } from "../models/user.model";
 import DataService from "./data.service";
-import { useMessageStore } from "../stores/message.store";
 import { useNavigate } from "react-router-dom";
+import { useUserrStore } from "../stores/user.store";
 
-export default function AuthService() {
+export default function AuthService(props?: IAuthService) {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
-
     const { insertData } = DataService();
-    const message = useMessageStore((state) => state.message);
-    const setMessage = useMessageStore((state) => state.setMessage);
+
+    const signIn = useUserrStore((state) => state.signIn);
+    const setSignIn = useUserrStore((state) => state.setSignIn);
+    const resetSignIn = useUserrStore((state) => state.resetSignIn);
+
+    const signUp = useUserrStore((state) => state.signUp);
+    const setSignUp = useUserrStore((state) => state.setSignUp);
+    const resetSignUp = useUserrStore((state) => state.resetSignUp);
 
     const { data: currentUser, error: currentUserError, isLoading: isCurrentUserLoading } = useQuery<IUser | null>({
         queryKey: ['current-user'],
@@ -28,28 +33,28 @@ export default function AuthService() {
                 return null;
             }
         },
-        refetchOnMount: true,
-        refetchOnReconnect: true,
-        refetchOnWindowFocus: false,
-        retry: false
+        retry: false,
+        staleTime: Infinity
     });
 
     const signInMt = useMutation({
-        mutationFn: async (props: ISignIn) => {
+        mutationFn: async () => {
             await insertData<ISignIn>({
                 api_url: `${import.meta.env.VITE_BASE_API_URL}/auths/sign-in`,
                 data: {
-                    password: props.password.trim(),
-                    username: props.username.trim()
+                    password: signIn.password.trim(),
+                    username: signIn.username.trim()
                 }
             });
         },
         onError: (error) => {
-            setMessage(error.message);
+            props?.setMessage(error.message);
+            navigate('/sign-in');
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['current-user'] });
             navigate('/histories');
+            resetSignIn();
         },
     });
 
@@ -61,37 +66,41 @@ export default function AuthService() {
             });
         },
         onError: (error) => {
-            setMessage(error.message);
+            props?.setMessage(error.message);
         },
         onSuccess: () => {
             queryClient.setQueryData(['current-user'], null);
             queryClient.clear();
+            resetSignIn();
+            resetSignUp();
             navigate('/sign-in');
         },
     });
 
     const signUpMt = useMutation({
-        mutationFn: async (props: ISignUp) => {
+        mutationFn: async () => {
             await insertData<ISignUp>({
-                api_url: `${import.meta.env.VITE_BASE_API_URL}/auths/register`,
+                api_url: `${import.meta.env.VITE_BASE_API_URL}/auths/sign-up`,
                 data: {
-                    email: props.email.trim(),
-                    password: props.password.trim(),
-                    username: props.username.trim()
+                    email: signUp.email.trim(),
+                    password: signUp.password.trim(),
+                    username: signUp.username.trim()
                 }
             });
         },
         onError: (error) => {
-            setMessage(error.message);
+            props?.setMessage(error.message);
         },
         onSuccess: () => {
-            navigate('/sign-in');
+            resetSignUp();
+            navigate('/histories');
         },
     });
 
     const isProcessing = signInMt.isPending || signUpMt.isPending;
 
     return {
-        currentUserError, currentUser, isCurrentUserLoading, isProcessing, message, signInMt, signOutMt, signUpMt
+        currentUserError, currentUser, isCurrentUserLoading, isProcessing, navigate, 
+        setSignIn, setSignUp, signIn, signUp, signInMt, signOutMt, signUpMt
     }
 }

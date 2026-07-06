@@ -1,13 +1,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRef } from "react";
-import { useAnalyzeStore } from "../stores/analyze.store";
+import { useAnalyzeStore } from "../stores/result.store";
 import DataService from "./data.service";
 import type { IResultService } from "../models/result.model";
 import AuthService from "./auth.service";
 
 export default function ResultService(props?: IResultService) {
     const queryClient = useQueryClient();
-    const { currentUser } = AuthService();
+    const { currentUser, isCurrentUserLoading } = AuthService();
     const { deleteData, getData, infiniteScroll, insertData } = DataService();
 
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -17,10 +17,10 @@ export default function ResultService(props?: IResultService) {
     const analyzeMt = useMutation({
         mutationFn: async () => {
             const formData = new FormData();
-            formData.append("file", selectedImage);
+            formData.append("file", selectedImage!);
 
             await insertData({
-                api_url: `${import.meta.env.VITE_BASE_API_URL}/result/analyze`,
+                api_url: `${import.meta.env.VITE_BASE_API_URL}/results/analyze`,
                 data: formData
             });
         },
@@ -32,9 +32,13 @@ export default function ResultService(props?: IResultService) {
         }
     });
 
+    const cancelSelectedImage = () => {
+        setSelectedImage(null);
+    }
+
     const deleteAllResultsMt = useMutation({
         mutationFn: async () => {
-            await deleteData({ api_url: `${import.meta.env.VITE_BASE_API_URL}/result/rm-all` });
+            await deleteData({ api_url: `${import.meta.env.VITE_BASE_API_URL}/results/rm-all` });
         },
         onError: (error) => {
             props?.setMessage!(error.message);
@@ -47,7 +51,7 @@ export default function ResultService(props?: IResultService) {
 
     const deleteResultMt = useMutation({
         mutationFn: async () => {
-            await deleteData({ api_url: `${import.meta.env.VITE_BASE_API_URL}/result/rm/${props?.id}` });
+            await deleteData({ api_url: `${import.meta.env.VITE_BASE_API_URL}/results/rm/${props?.id}` });
         },
         onError: (error) => {
             props?.setMessage!(error.message);
@@ -66,14 +70,16 @@ export default function ResultService(props?: IResultService) {
     }
 
     const { paginatedData, error, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = infiniteScroll({
-        api_url: `${import.meta.env.VITE_BASE_API_URL}/result/show-all`,
+        api_url: `${import.meta.env.VITE_BASE_API_URL}/results/show-all`,
+        enabled: !!currentUser?.user_id && !isCurrentUserLoading,
         limit: 14,
         query_key: [`results-${currentUser?.user_id}`],
         stale_time: Infinity
     });
 
     const { data, error: detailError, isLoading: isDetailLoading } = getData({
-        api_url: `${import.meta.env.VITE_BASE_API_URL}/result/show`,
+        api_url: `${import.meta.env.VITE_BASE_API_URL}/results/show`,
+        enabled: !!props?.id && !isCurrentUserLoading,
         query_key: [`result-${props?.id}`],
         stale_time: Infinity
     });
@@ -81,7 +87,7 @@ export default function ResultService(props?: IResultService) {
     return {
         getAllResults: { paginatedData, error, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading },
         getResult: { data, detailError, isDetailLoading }, analyzeMt, deleteAllResultsMt, deleteResultMt,
-        handleSelectedFile, selectedImage,
+        cancelSelectedImage, handleSelectedFile, selectedImage, fileInputRef,
         isProcessing: analyzeMt.isPending || deleteResultMt.isPending || deleteAllResultsMt.isPending,
     }
 }

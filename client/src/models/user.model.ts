@@ -1,3 +1,7 @@
+export interface IAuthService {
+    setMessage: (message: string | null) => void;
+}
+
 export interface ISignIn {
     username: string;
     password: string;
@@ -10,7 +14,11 @@ export interface ISignUp extends ISignIn {
 export interface IUser {
     created_at: string;
     email: string;
-    profile_picture: string;
+    profile_picture: {
+        public_id: string;
+        resource_type: string;
+        url: string;
+    };
     user_id: string;
     username: string;
 }

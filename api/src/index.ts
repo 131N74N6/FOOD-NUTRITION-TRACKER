@@ -27,14 +27,17 @@ v2.config({
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors());
+app.use(cors({
+    credentials: true,
+    origin: ['http://localhost:2100', 'http://localhost:5173']
+}));
 app.use('/api/auths', authRouters);
-app.use('/api/result', resultRouters);
+app.use('/api/results', resultRouters);
 app.use('/api/users', userRouters);
 
 if (process.env.NODE_ENV !== 'production') {
     db.then(() => {
-        app.listen(6666, () => console.log(`api running at: http://localhost:6666`));
+        app.listen(2100, () => console.log(`api running at: http://localhost:2100`));
     });
 }
 
