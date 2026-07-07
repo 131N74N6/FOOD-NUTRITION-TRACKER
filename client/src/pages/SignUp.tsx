@@ -3,20 +3,15 @@ import AuthService from "../services/auth.service";
 import { Link, useNavigate } from "react-router-dom";
 import { useMessageStore } from "../stores/message.store";
 import { User2 } from "lucide-react";
+import UserServices from "../services/user.service";
 
 export default function SignUp() {
     const navigate = useNavigate();
     const message = useMessageStore((state) => state.message);
     const setMessage = useMessageStore((state) => state.setMessage);
     
-    const { 
-        currentUser, 
-        isCurrentUserLoading, 
-        isProcessing, 
-        setSignUp, 
-        signUp, 
-        signUpMt 
-    } = AuthService({ setMessage: setMessage });
+    const { currentUser, isCurrentUserLoading } = UserServices();
+    const { isProcessing, setSignUp, signUp, signUpMt } = AuthService({ setMessage: setMessage });
 
     useEffect(() => {
         if (currentUser && currentUser.user_id && !isCurrentUserLoading) {

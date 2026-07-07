@@ -1,5 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { IAuthService, IUser } from "../models/user.model";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { IAuthService } from "../models/user.model";
 import { useNavigate } from "react-router-dom";
 import { useUserrStore } from "../stores/user.store";
 
@@ -14,26 +14,6 @@ export default function AuthService(props?: IAuthService) {
     const signUp = useUserrStore((state) => state.signUp);
     const setSignUp = useUserrStore((state) => state.setSignUp);
     const resetSignUp = useUserrStore((state) => state.resetSignUp);
-
-    const { data: currentUser, error: currentUserError, isLoading: isCurrentUserLoading } = useQuery<IUser | null>({
-        queryKey: ['current-user'],
-        queryFn: async () => {
-            try {
-                const request = await fetch(`${import.meta.env.VITE_BASE_API_URL}/users/show`, {
-                    credentials: 'include',
-                    headers: { 'Content-Type': 'application/json' },
-                    method: 'GET'
-                });
-
-                if (!request.ok) return null;
-                return await request.json();
-            } catch (error) {
-                return null;
-            }
-        },
-        retry: false,
-        staleTime: Infinity
-    });
 
     const signInMt = useMutation({
         mutationFn: async () => {
@@ -127,7 +107,6 @@ export default function AuthService(props?: IAuthService) {
     const isProcessing = signInMt.isPending || signUpMt.isPending;
 
     return {
-        currentUserError, currentUser, isCurrentUserLoading, isProcessing, navigate, 
-        setSignIn, setSignUp, signIn, signUp, signInMt, signOutMt, signUpMt
+        isProcessing, navigate, setSignIn, setSignUp, signIn, signUp, signInMt, signOutMt, signUpMt
     }
 }

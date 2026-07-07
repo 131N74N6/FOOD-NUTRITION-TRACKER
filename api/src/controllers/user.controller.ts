@@ -8,6 +8,9 @@ import { uploadToCloudinary } from "../services/cloudinary.service";
 export async function changeUser(req: AuthUser, res: Response) {
     try {
         const currentUserId = req.user?.user_id;
+        const currentUser = await User.findOne({ _id: currentUserId });
+        if (!currentUser) return res.status(404).json({ message: "user not found" });
+
         const { username } = req.body;
         const image = req.file as Express.Multer.File | undefined;
 
@@ -17,9 +20,26 @@ export async function changeUser(req: AuthUser, res: Response) {
             originalName: image?.originalname! 
         });
 
-        await User.updateOne({ _id: currentUserId }, {
-            $set: { image: uploadResult, username }
-        });
+        if (image) {
+            await v2.uploader.destroy(
+                currentUser.profile_picture.public_id, 
+                { resource_type: currentUser.profile_picture.resource_type }
+            );
+
+            await User.updateOne({ _id: currentUserId }, {
+                $set: { 
+                    image: uploadResult, 
+                    username: username || `user-${Date.now()}` 
+                }
+            });
+        } else {
+            await User.updateOne({ _id: currentUserId }, {
+                $set: { 
+                    image: currentUser.profile_picture, 
+                    username: username || `user-${Date.now()}` 
+                }
+            });
+        }
 
         res.status(200).json({ message: "user updated successfully" });
     } catch (error) {
@@ -29,10 +49,15 @@ export async function changeUser(req: AuthUser, res: Response) {
 
 export async function deleteOldProfilePicture(req: AuthUser, res: Response) {
     try {
+        const { imageToDelete } = req.body;
         const currentUser = await User.findOne({ _id: req.user?.user_id });
         if (!currentUser) return res.status(404).json({ message: "user not found" });
 
-        await v2.uploader.destroy(currentUser.profile_picture.public_id, { resource_type: currentUser.profile_picture.resource_type });
+        await v2.uploader.destroy(
+            imageToDelete.profile_picture.public_id, 
+            { resource_type: imageToDelete.profile_picture.resource_type }
+        );
+
         await User.updateOne({ _id: currentUser._id }, {
             $unset: { profile_picture: '' }
         });

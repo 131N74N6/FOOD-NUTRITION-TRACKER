@@ -2,13 +2,13 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tansta
 import { useRef } from "react";
 import { useAnalyzeStore } from "../stores/result.store";
 import type { IResult, IResultService } from "../models/result.model";
-import AuthService from "./auth.service";
+import UserServices from "./user.service";
 
 export default function ResultService(props?: IResultService) {
     const queryClient = useQueryClient();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const { currentUser, isCurrentUserLoading } = AuthService();
+    const { currentUser, isCurrentUserLoading } = UserServices();
 
     const selectedImage = useAnalyzeStore((state) => state.selectedImage);
     const setSelectedImage = useAnalyzeStore((state) => state.setSelectedImage);
