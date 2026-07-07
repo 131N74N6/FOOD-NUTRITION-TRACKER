@@ -43,7 +43,7 @@ export default function ResultService(props?: IResultService) {
             props?.setMessage!(error.message);
         },
         onSuccess: (response) => {
-            setResult(response.message);
+            setResult(response.explanation);
             queryClient.invalidateQueries({ queryKey: [`results-${currentUser?.user_id}`] });
         }
     });
@@ -112,7 +112,7 @@ export default function ResultService(props?: IResultService) {
         if (fileInputRef.current) fileInputRef.current.value = '';
     }
 
-   const { data, error, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery({
+   const { data: allResults, error, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery({
         enabled: !!currentUser && !!currentUser.user_id && !isCurrentUserLoading,
         getNextPageParam: (lastPage, allPages) => {
             if (lastPage.length < 14) return;
@@ -141,13 +141,13 @@ export default function ResultService(props?: IResultService) {
         staleTime: Infinity
     });
 
-    const paginatedresult: IResult[] = data ? data.pages.flat() : [];
+    const paginatedresult: IResult[] = allResults ? allResults.pages.flat() : [];
 
-    const { data: resultDetail, error: detailError, isLoading: isDetailLoading } = useQuery({
+    const { data: resultDetail, error: detailError, isLoading: isDetailLoading } = useQuery<IResult[]>({
         enabled: !!props?.id && !isCurrentUserLoading,
         queryFn: async () => {
             try {
-                const request = await fetch(`${import.meta.env.VITE_BASE_API_URL}/results/show`, {
+                const request = await fetch(`${import.meta.env.VITE_BASE_API_URL}/results/show/${props?.id}`, {
                     credentials: 'include',
                     headers: { 'Content-Type': 'application/json' },
                     method: 'GET'

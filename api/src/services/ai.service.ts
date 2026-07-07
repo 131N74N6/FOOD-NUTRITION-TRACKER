@@ -1,5 +1,8 @@
+import { GoogleGenAI } from "@google/genai";
+
 const AI_API_KEY = process.env.AI_API_KEY;
 const AI_MODEL = process.env.AI_MODEL || 'gemini-2.5-flash';
+const ai = new GoogleGenAI({ apiKey: AI_API_KEY });
 
 const commands = `
 Analisis nutrisi apa saja yang terkandung pada makanan atau minuman dalam gambar ini. 
@@ -13,59 +16,82 @@ export interface GeminiAnalysisResult {
     analysis: string;
 }
 
-export async function analyzeImageWithAI(imageBuffer: Buffer, mimeType: string): Promise<GeminiAnalysisResult> {
-    if (!AI_API_KEY) throw new Error('AI Api Key is not configured');
+export interface AnalyzeIntrf {
+    imageBuffer: Buffer;
+    mimeType: string;
+}
+
+export async function analyzeImageWithAI(props: AnalyzeIntrf): Promise<GeminiAnalysisResult> {
+    if (!AI_API_KEY) {
+        throw new Error('AI_API_KEY is not configured in environment variables');
+    }
+
+    if (!ai) {
+        throw new Error('GoogleGenAI client is not initialized');
+    }
+
+    if (!props.imageBuffer || props.imageBuffer.length === 0) {
+        throw new Error('Image buffer is empty');
+    }
 
     try {
-        const base64Image = imageBuffer.toString('base64');
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${AI_API_KEY}`;
-
-        const request = await fetch(url, {
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [
-                        { text: commands }, 
-                        { inline_data: { 
-                            data: base64Image, 
-                            mime_type: mimeType 
-                        }}
-                    ]
-                }]
-            }),
-            method: 'POST'
+        const base64Image = props.imageBuffer.toString('base64');
+        const response = await ai.models.generateContent({
+            model: AI_MODEL,
+            contents: [{
+                role: 'user',
+                parts: [
+                    { text: commands },
+                    {
+                        inlineData: {
+                            data: base64Image,
+                            mimeType: props.mimeType
+                        }
+                    }
+                ]
+            }]
         });
 
-        const response: any = await request.json().catch(() => ({}));
+        const analysisText = response.text;
 
-        if (!request.ok) {
-            const errorMessage = response?.error?.message || `AI API error: ${response.status}`;
-
-            if (request.status === 400) {
-                throw new Error(`Invalid request to AI API: ${errorMessage}`);
-            } else if (request.status === 403) {
-                throw new Error('AI API key is invalid or expired');
-            } else if (request.status === 429) {
-                throw new Error('AI API rate limit exceeded. Please try again later');
-            } else if (request.status >= 500) {
-                throw new Error('AI API server error. Please try again later');
-            }
+        if (!analysisText || analysisText.trim().length === 0) {
+            throw new Error('No analysis result returned from AI. The image might not contain food/drink.');
         }
-
-        const analysisText = response?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-        if (!analysisText) throw new Error('No analysis result from AI');
 
         return { analysis: analysisText };
     } catch (error: any) {
+        if (error.message?.includes('API_KEY_INVALID') || error.message?.includes('API key not valid')) {
+            throw new Error('AI API authentication failed: Invalid API key. Check AI_API_KEY environment variable.');
+        }
+
         if (error.name === 'AbortError' || error.name === 'TimeoutError') {
             throw new Error('AI API request timeout. Please try again');
         }
 
-        if (error.cause?.code === 'ECONNREFUSED' || error.cause?.code === 'ENOTFOUND') {
-            throw new Error('Cannot connect to AI API. Check your internet connection');
+        if (error.message?.includes('MODEL_NOT_FOUND') || error.message?.includes('not found')) {
+            throw new Error(`AI model '${AI_MODEL}' not found. Check AI_MODEL environment variable.`);
         }
 
-        throw new Error('Failed to analyze image');
+        if (error.message?.includes('quota') || error.message?.includes('RESOURCE_EXHAUSTED')) {
+            throw new Error('AI API quota exceeded. Please wait a moment and try again.');
+        }
+
+        if (error.message?.includes('SAFETY') || error.message?.includes('blocked')) {
+            throw new Error('AI analysis blocked due to safety concerns. Try a different image.');
+        }
+
+        if (error.message?.includes('timeout') || error.message?.includes('ETIMEDOUT')) {
+            throw new Error('AI analysis timed out. Please try with a smaller image.');
+        }
+
+        if (error.message?.includes('ECONNREFUSED') || error.message?.includes('ENOTFOUND')) {
+            throw new Error('Check your internet connection.');
+        }
+
+        if (error.message?.includes('PERMISSION_DENIED')) {
+            throw new Error('Access denied. Your API key may not have permission to use this model.');
+        }
+
+        throw new Error(`AI analysis failed: ${error.message || 'Unknown error'}`);
     }
 }

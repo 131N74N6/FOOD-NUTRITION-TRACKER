@@ -7,6 +7,7 @@ import Results from './pages/Histories';
 import ProtectedRoute from './components/ProtectedRoute';
 import Analyze from './pages/Analyze';
 import Profile from './pages/Profile';
+import Details from './pages/Details';
 
 export default function App() {
     return (
@@ -18,6 +19,7 @@ export default function App() {
                     <Route path='/sign-in' element={<SignIn/>}/>
                     <Route path='/sign-up' element={<SignUp/>}/>
                     <Route path='/analyze' element={<ProtectedRoute><Analyze/></ProtectedRoute>}/>
+                    <Route path='/result/:_id' element={<ProtectedRoute><Details/></ProtectedRoute>}/>
                     <Route path='/histories' element={<ProtectedRoute><Results/></ProtectedRoute>}/>
                     <Route path='/profile' element={<ProtectedRoute><Profile/></ProtectedRoute>}/>
                 </Routes>

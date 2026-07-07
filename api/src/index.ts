@@ -1,6 +1,5 @@
 import dns from 'node:dns/promises';
 import dotenv from 'dotenv';
-
 dotenv.config();
 
 if (process.env.NODE_ENV !== 'production') {

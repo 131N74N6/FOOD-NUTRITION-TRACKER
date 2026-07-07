@@ -27,6 +27,22 @@ export async function changeUser(req: AuthUser, res: Response) {
     }
 }
 
+export async function deleteOldProfilePicture(req: AuthUser, res: Response) {
+    try {
+        const currentUser = await User.findOne({ _id: req.user?.user_id });
+        if (!currentUser) return res.status(404).json({ message: "user not found" });
+
+        await v2.uploader.destroy(currentUser.profile_picture.public_id, { resource_type: currentUser.profile_picture.resource_type });
+        await User.updateOne({ _id: currentUser._id }, {
+            $unset: { profile_picture: '' }
+        });
+        
+        res.status(200).json({ message: "profile picture deleted sucessfuly" });
+    } catch (error) {
+        res.status(500).json({ message: "something went wrong" });
+    }
+}
+
 export async function deleteUser(req: AuthUser, res: Response) {
     try {
         const currentUser = await User.findOne({ _id: req.user?.user_id });

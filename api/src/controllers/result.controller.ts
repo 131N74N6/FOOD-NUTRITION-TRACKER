@@ -12,7 +12,7 @@ export async function analyzingImages(req: AuthUser, res: Response) {
         const image = req.file as Express.Multer.File | undefined;
         if (!image) return res.status(400).json({ message: "image is required" });
         
-        const aiResult = await analyzeImageWithAI(image.buffer, image.mimetype);
+        const aiResult = await analyzeImageWithAI({ imageBuffer: image.buffer, mimeType: image.mimetype });
 
         const uploadResult = await uploadToCloudinary({ 
             fileBuffer: image.buffer, 

@@ -13,6 +13,7 @@ export interface IResult {
 }
 
 export interface IResultData {
+    isProcessing: boolean;
     onDelete: UseMutationResult<void, Error, string, unknown>;
     result: IResult;
 }
