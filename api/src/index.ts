@@ -28,7 +28,12 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
     credentials: true,
-    origin: ['http://localhost:2100', 'http://localhost:5173']
+    origin: [
+        'http://localhost:2100', 
+        'http://localhost:5173',
+        'https://food-nutrition-tracker-be.vercel.app',
+        'https://food-nutrition-tracker-pied.vercel.app'
+    ]
 }));
 app.use('/api/auths', authRouters);
 app.use('/api/results', resultRouters);
