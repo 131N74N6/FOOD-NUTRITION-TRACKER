@@ -9,8 +9,11 @@ export default function UserServices(props?: IUserService) {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
 
-    const editUser = useUserrStore((state) => state.editUser);
-    const setEditUser = useUserrStore((state) => state.setEditUser);
+    const editUserName = useUserrStore((state) => state.editUserName);
+    const setEditUserName = useUserrStore((state) => state.setEditUserName);
+
+    const editProfileImage = useUserrStore((state) => state.editProfileImage);
+    const setEditProfileImage = useUserrStore((state) => state.setEditProfileImage);
 
     const deletedImage = useUserrStore((state) => state.deletedImage);
     const setDeletedImage = useUserrStore((state) => state.setDeletedImage);
@@ -65,7 +68,7 @@ export default function UserServices(props?: IUserService) {
                 }
 
                 const formData = new FormData();
-                formData.append("username", editUser.username.trim());
+                formData.append("username", editUserName.trim());
                 if (selectedImage) formData.append("file", selectedImage);
 
                 const request = await fetch(`${import.meta.env.VITE_BASE_API_URL}/users/remake`, {
@@ -151,7 +154,8 @@ export default function UserServices(props?: IUserService) {
         deletedImage,
         deleteUserMt, 
         editMode,
-        editUser, 
+        editProfileImage,
+        editUserName, 
         inputFileRef,
         isCurrentUserLoading, 
         isProcessing, 
@@ -160,7 +164,8 @@ export default function UserServices(props?: IUserService) {
         selectedImageUrl,
         setDeletedImage,
         setEditMode,
-        setEditUser, 
+        setEditProfileImage, 
+        setEditUserName,
         setSelectedImage, 
         setSelectedImageUrl,
         showSelectedImage

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { ISignIn, ISignUp, IUser } from "../models/user.model";
+import type { ISignIn, ISignUp } from "../models/user.model";
 
 export interface UserState {
     deletedImage: {
@@ -8,7 +8,12 @@ export interface UserState {
         url: string;
     } | null;
     editMode: boolean;
-    editUser: IUser;
+    editProfileImage: {
+        public_id: string;
+        resource_type: string;
+        url: string;
+    } | null;
+    editUserName: string;
     selectedImage: File | null;
     selectedImageUrl: string | null;
     signIn: ISignIn;
@@ -23,7 +28,12 @@ export interface UserState {
         url: string;
     } | null) => void;
     setEditMode: (editMode: boolean) => void;
-    setEditUser: (key: 'created_at'| 'email' | 'profile_picture' | 'user_id' | 'username', value: string) => void;
+    setEditProfileImage: (editProfileImage: {
+        public_id: string;
+        resource_type: string;
+        url: string;
+    } | null) => void;
+    setEditUserName: (editUserName: string) => void;
     setSelectedImage: (selectedImage: File | null) => void;
     setSelectedImageUrl: (selectedImageUrl: string | null) => void;
     setSignIn: (key: 'password' | 'username', value: string) => void;
@@ -33,17 +43,8 @@ export interface UserState {
 export const useUserrStore = create<UserState>((set) => ({
     deletedImage: null,
     editMode: false,
-    editUser: {
-        created_at: "",
-        email: "",
-        profile_picture: {
-            public_id: "",
-            resource_type: "",
-            url: ""
-        },
-        user_id: "",
-        username: ""
-    },
+    editUserName: '',
+    editProfileImage: null,
     selectedImage: null,
     selectedImageUrl: null,
     signIn: {
@@ -59,17 +60,8 @@ export const useUserrStore = create<UserState>((set) => ({
     resetEditMode: () => set({ 
         deletedImage: null,
         editMode: false, 
-        editUser: { 
-            created_at: "", 
-            email: "", 
-            profile_picture: {
-                public_id: "",
-                resource_type: "",
-                url: ""
-            }, 
-            user_id: "", 
-            username: "" 
-        }, 
+        editUserName: '',
+        editProfileImage: null,
         selectedImage: null,
         selectedImageUrl: null
     }),
@@ -77,7 +69,8 @@ export const useUserrStore = create<UserState>((set) => ({
     resetSignUp: () => set({ signUp: { email: "", password: "", username: "" } }),
     setDeletedImage: (deletedImage) => set({ deletedImage }),
     setEditMode: (editMode) => set({ editMode }),
-    setEditUser: (key, value) => set((state) => ({ editUser: { ...state.editUser, [key]: value } })),
+    setEditUserName: (editUserName) => set({ editUserName }),
+    setEditProfileImage: (editProfileImage) => set({ editProfileImage }),
     setSelectedImage: (selectedImage) => set({ selectedImage }),
     setSelectedImageUrl: (selectedImageUrl) => set({ selectedImageUrl }),
     setSignIn: (key, value) => set((state) => ({ signIn: { ...state.signIn, [key]: value } })),

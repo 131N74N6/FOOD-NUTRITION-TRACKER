@@ -13,7 +13,8 @@ export default function Profile() {
         currentUser, 
         deleteUserMt, 
         editMode, 
-        editUser, 
+        editProfileImage,
+        editUserName, 
         inputFileRef,
         isProcessing,
         resetEditMode,
@@ -21,7 +22,8 @@ export default function Profile() {
         selectedImageUrl, 
         setDeletedImage,
         setEditMode, 
-        setEditUser, 
+        setEditProfileImage,
+        setEditUserName, 
         setSelectedImage,
         setSelectedImageUrl,
         showSelectedImage
@@ -36,15 +38,12 @@ export default function Profile() {
 
     useEffect(() => {
         if (editMode && currentUser) {
-            setEditUser('username', currentUser.username);
-            setSelectedImageUrl(currentUser.profile_picture.url);
+            setEditUserName(currentUser.username);
+            currentUser.profile_picture ? setEditProfileImage(currentUser.profile_picture) : setEditProfileImage(null);
         } else {
-            setEditUser('username', '');
-            setDeletedImage(null);
-            setSelectedImage(null);
-            setSelectedImageUrl(null);
+            resetEditMode();
         }
-    }, [editMode, resetEditMode, currentUser?.user_id])
+    }, [editMode, currentUser?.user_id])
 
     const changeUser = (event: React.SyntheticEvent) => {
         event.preventDefault();
@@ -69,11 +68,11 @@ export default function Profile() {
                         
                         <div className="flex justify-center">
                             <div className="w-40 h-40 rounded-full">
-                                {selectedImageUrl ? (
+                                {editProfileImage ? (
                                     <div className="relative group w-full h-full">
                                         <img 
-                                            src={selectedImageUrl} 
-                                            alt={currentUser?.profile_picture?.public_id}
+                                            src={editProfileImage.url} 
+                                            alt={editProfileImage.public_id}
                                             className="w-full h-full rounded-full object-cover"
                                         />
                                         <button
@@ -85,7 +84,7 @@ export default function Profile() {
                                             disabled={isProcessing}
                                             onClick={() => {
                                                 setDeletedImage(currentUser?.profile_picture!);
-                                                setSelectedImageUrl(null);
+                                                setEditProfileImage(null);
                                             }}
                                             type="button"
                                         >
@@ -137,9 +136,9 @@ export default function Profile() {
                                 disabled={isProcessing}
                                 id="username"
                                 name="username"
-                                onChange={(event) => setEditUser('username', event.target.value)}
+                                onChange={(event) => setEditUserName(event.target.value)}
                                 type="text"
-                                value={editUser.username}
+                                value={editUserName}
                             />
                         </div>
                         <div className="flex gap-2.5">
