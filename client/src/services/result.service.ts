@@ -22,8 +22,10 @@ export default function ResultService(props?: IResultService) {
 
     const analyzeMt = useMutation({
         mutationFn: async () => {
+            if (!selectedImage) throw new Error("image is required");
+
             const formData = new FormData();
-            formData.append("file", selectedImage!, selectedImage?.name);
+            formData.append("file", selectedImage, selectedImage.name);
 
             try {
                 const request = await fetch(`${import.meta.env.VITE_BASE_API_URL}/results/analyze`, {

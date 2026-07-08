@@ -14,28 +14,29 @@ export async function changeUser(req: AuthUser, res: Response) {
         const { username } = req.body;
         const image = req.file as Express.Multer.File | undefined;
 
-        const uploadResult = await uploadToCloudinary({ 
-            fileBuffer: image?.buffer!, 
-            folder: "user_profile", 
-            originalName: image?.originalname! 
-        });
-
         if (image) {
-            await v2.uploader.destroy(
-                currentUser.profile_picture.public_id, 
-                { resource_type: currentUser.profile_picture.resource_type }
-            );
+            if (currentUser.profile_picture?.public_id) {
+                await v2.uploader.destroy(
+                    currentUser.profile_picture.public_id, 
+                    { resource_type: currentUser.profile_picture.resource_type || 'image' }
+                );
+            }
+
+            const uploadResult = await uploadToCloudinary({ 
+                fileBuffer: image.buffer, 
+                folder: "user_profile", 
+                originalName: image?.originalname! 
+            });
 
             await User.updateOne({ _id: currentUserId }, {
                 $set: { 
-                    image: uploadResult, 
+                    profile_picture: uploadResult, 
                     username: username || `user-${Date.now()}` 
                 }
             });
         } else {
             await User.updateOne({ _id: currentUserId }, {
                 $set: { 
-                    image: currentUser.profile_picture, 
                     username: username || `user-${Date.now()}` 
                 }
             });
@@ -43,6 +44,7 @@ export async function changeUser(req: AuthUser, res: Response) {
 
         res.status(200).json({ message: "user updated successfully" });
     } catch (error) {
+        console.log(`error: ${error}`);
         res.status(500).json({ message: "something went wrong" });
     }
 }

@@ -10,6 +10,7 @@ Lalu cantumkan nilai gizi ditiap nutrisi yang ada serta nilai kalorinya.
 Kemudian buat kesimpulan apakah makanan maupun minuman dalam gambar sehat atau tidak. 
 Berikan peringatan siapa saja yang tidak boleh mengonsumsi makanan atau minuman dalam gambar. 
 Sebutkan dampak yang akan dirasakan tubuh jika mengonsumsi makanan atau minuman dalam gambar secara berlebihan.
+Tolak secara halus jika gambar tidak mengandung makanan atau minuman.
 `;
 
 export interface GeminiAnalysisResult {

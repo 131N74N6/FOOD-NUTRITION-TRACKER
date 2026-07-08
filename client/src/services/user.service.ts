@@ -41,35 +41,32 @@ export default function UserServices(props?: IUserService) {
                 return null;
             }
         },
-        retry: false,
+        refetchOnMount: true,
+        refetchOnReconnect: true,
         staleTime: Infinity
     });
 
     const changeUserMt = useMutation({
         mutationFn: async () => {
             try {
-                if (deletedImage) {
-                    try {
-                        const request = await fetch(`${import.meta.env.VITE_BASE_API_URL}/users/rm-profile`, {
-                            body: JSON.stringify({
-                                imageToDelete: deletedImage
-                            }),
-                            credentials: 'include',
-                            headers: { 'Content-Type': 'application/json' },
-                            method: 'DELETE'
-                        });
+                if (deletedImage && deletedImage.public_id) {
+                    const request = await fetch(`${import.meta.env.VITE_BASE_API_URL}/users/rm-profile`, {
+                        body: JSON.stringify({
+                            imageToDelete: deletedImage
+                        }),
+                        credentials: 'include',
+                        headers: { 'Content-Type': 'application/json' },
+                        method: 'DELETE'
+                    });
 
-                        const response = await request.json();
-                        if (!request.ok) throw new Error(response.message);
-                        return response;
-                    } catch (error: any) {
-                        throw error;
-                    }
+                    const response = await request.json();
+                    if (!request.ok) throw new Error(response.message);
+                    await response;
                 }
 
                 const formData = new FormData();
-                formData.append("file", selectedImage!);
                 formData.append("username", editUser.username.trim());
+                if (selectedImage) formData.append("file", selectedImage);
 
                 const request = await fetch(`${import.meta.env.VITE_BASE_API_URL}/users/remake`, {
                     credentials: 'include',
@@ -90,6 +87,9 @@ export default function UserServices(props?: IUserService) {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [`current-user`] });
             resetEditMode();
+            setDeletedImage(null);
+            setSelectedImage(null);
+            setSelectedImageUrl(null);
         }
     });
 
@@ -127,6 +127,9 @@ export default function UserServices(props?: IUserService) {
             queryClient.setQueryData(['current-user'], null);
             queryClient.clear();
             resetEditMode();
+            setDeletedImage(null);
+            setSelectedImage(null);
+            setSelectedImageUrl(null);
             navigate('/sign-in');
         }
     });

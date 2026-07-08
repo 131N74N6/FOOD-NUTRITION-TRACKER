@@ -16,7 +16,7 @@ export const useAnalyzeStore = create<AnalyzeState>((set) => ({
     selectedImage: null,
     selectedImageUrl: "",
 
-    resetResult: () => set({ result: null, selectedImageUrl: null }),
+    resetResult: () => set({ result: null, selectedImage: null, selectedImageUrl: null }),
     setResult: (result) => set({ result }),
     setSelectedImage: (selectedImage) => set({ selectedImage }),
     setSelectedImageUrl: (selectedImageUrl) => set({ selectedImageUrl }),
