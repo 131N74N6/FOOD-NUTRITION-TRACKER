@@ -12,7 +12,7 @@ export default function HistoryList(props: IResultList) {
     }
 
     return (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 overflow-y-auto">
             <div className="grid xl:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-2 p-2">
                 {props.results.map(result => (
                     <HistoryData
@@ -38,7 +38,9 @@ export default function HistoryList(props: IResultList) {
                 ) : props.isFetchingNextPage ? (
                     <Loading/>
                 ) : (
-                    <div className="text-gray-700 font-medium text-center hover:text-gray-800 transition-colors text-[0.8rem]">No More Data to Show...</div>
+                    <div className="text-gray-700 font-medium text-center hover:text-gray-800 transition-colors text-[0.8rem]">
+                        No More Data to Show...
+                    </div>
                 )}
             </div>
         </div>

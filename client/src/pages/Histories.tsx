@@ -11,8 +11,8 @@ export default function Results() {
     return (
         <section className="flex md:flex-row flex-col h-screen relative">
             {Navbar(isProcessing)}
-            <div className="w-full md:w-3/4 h-full overflow-y-auto">
-                <div className="flex justify-end p-2">
+            <div className="flex flex-col gap-2 w-full md:w-3/4 h-full min-h-50 ">
+                <div className="flex justify-end pt-2 pr-2">
                     <button
                         className="text-gray-600 hover:text-gray-400 transition-colors cursor-pointer disabled:cursor-not-allowed"
                         disabled={isProcessing || isLoading}
